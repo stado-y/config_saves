@@ -7,7 +7,7 @@ class App(QWidget):
 
     def __init__(self):
         super().__init__()
-        self.title = 'PornHub Downloader'
+        self.title = 'PornHub Downloader'  # kek
         self.left = 256
         self.top = 256
         self.width = 1024
@@ -18,15 +18,19 @@ class App(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         
+        self.rootPath = 'D:/Hello Kotlin'  # TODO  change rootpath to dialog window
 
         # first tree
         self.model = QFileSystemModel()
-        self.model.setRootPath('D:/Hello Kotlin')
+        self.model.setRootPath(self.rootPath)
         
         self.tree = QTreeView()
         self.tree.setModel(self.model)
-        self.tree.setRootIndex(self.model.index('D:/Hello Kotlin'))
-        self.tree.setSelectionMode(QTreeView.MultiSelection)
+        self.tree.setRootIndex(self.model.index(self.rootPath))
+        self.tree.setSelectionMode(QTreeView.ExtendedSelection)
+        self.tree.setColumnWidth(0, 361)
+        self.tree.setColumnHidden(1, True)
+        self.tree.setColumnHidden(3, True)
         
         
         self.tree.setAnimated(False)
@@ -39,12 +43,15 @@ class App(QWidget):
         # ---------------------------------------
         # second tree
         self.model1 = QFileSystemModel()
-        self.model1.setRootPath('D:/Hello Kotlin')
+        self.model1.setRootPath(self.rootPath)
         
         self.tree1 = QTreeView()
         self.tree1.setModel(self.model1)
-        self.tree1.setRootIndex(self.model1.index('D:/Hello Kotlin'))
-        self.tree.setSelectionMode(QTreeView.MultiSelection)
+        self.tree1.setRootIndex(self.model1.index(self.rootPath))
+        self.tree1.setSelectionMode(QTreeView.ExtendedSelection)
+        self.tree1.setColumnWidth(0, 350)
+        self.tree1.setColumnHidden(1, True)
+        self.tree1.setColumnHidden(3, True)
         
         
         self.tree1.setAnimated(False)
@@ -54,7 +61,7 @@ class App(QWidget):
         self.tree1.setWindowTitle("Dir View2")
         self.tree1.resize(320, 480)
         self.tree1.move(340, 10)
-        print(self.model1.index('D:/Hello Kotlin'))
+        print(self.model1.index(self.rootPath))
         # ----------------------------------------------
         # window layout setup
         # left box
