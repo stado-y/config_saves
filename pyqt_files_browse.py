@@ -88,7 +88,14 @@ class App(QWidget):
         self.show()
 
     def add_items(self):
-        print(self.tree.selectedIndexes())
+        indexes = self.tree.selectedIndexes()
+        if indexes:
+            self.fileDlgPaths = []  # prevent double indexes
+            for i in indexes:
+                path = self.model.filePath(i)#.replace('/','\\')
+                if path not in self.fileDlgPaths:
+                    self.fileDlgPaths.append(path)
+            print(self.fileDlgPaths)
 
 
 if __name__ == '__main__':
