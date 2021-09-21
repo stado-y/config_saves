@@ -1,7 +1,9 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QFileSystemModel, QTreeView, QWidget, QVBoxLayout, QLabel, QGridLayout, QPushButton
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSlot, QRect, QCoreApplication
+import os
+from PyQt5.QtWidgets import QApplication, QFileSystemModel, QTreeView, QWidget, QVBoxLayout, QHBoxLayout, QLabel, \
+                            QGridLayout, QPushButton, QListView, QFileDialog, QLineEdit
+from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
+from PyQt5.QtCore import pyqtSlot, QRect, QCoreApplication, Qt
 
 class App(QWidget):
 
@@ -18,9 +20,13 @@ class App(QWidget):
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
         
-        self.rootPath = 'D:/Hello Kotlin'  # TODO  change rootpath to dialog window
+        #self.rootPath = 'D:/Hello Kotlin'  # TODO  change rootpath to dialog window
+        self.dirDialog = QFileDialog()
+        self.rootPath = self.dirDialog.getExistingDirectory()
 
-        # first tree
+        print(self.rootPath)
+
+        # tree
         self.model = QFileSystemModel()
         self.model.setRootPath(self.rootPath)
         
@@ -41,48 +47,68 @@ class App(QWidget):
         self.tree.resize(320, 480)
         self.tree.move(10, 10)
         # ---------------------------------------
-        # second tree
+        # list
         self.model1 = QFileSystemModel()
         self.model1.setRootPath(self.rootPath)
         
-        self.tree1 = QTreeView()
-        self.tree1.setModel(self.model1)
-        self.tree1.setRootIndex(self.model1.index(self.rootPath))
-        self.tree1.setSelectionMode(QTreeView.ExtendedSelection)
-        self.tree1.setColumnWidth(0, 350)
-        self.tree1.setColumnHidden(1, True)
-        self.tree1.setColumnHidden(3, True)
+        self.list = QListView()
+        self.model123 = QStandardItemModel(self.list)
         
-        
-        self.tree1.setAnimated(False)
-        self.tree1.setIndentation(10)
-        self.tree1.setSortingEnabled(True)
-        
-        self.tree1.setWindowTitle("Dir View2")
-        self.tree1.resize(320, 480)
-        self.tree1.move(340, 10)
-        print(self.model1.index(self.rootPath))
+        self.list.setSelectionMode(QListView.ExtendedSelection)
+        self.model123 = QStandardItemModel(self.list)
+        self.list.setModel(self.model123)
+
         # ----------------------------------------------
         # window layout setup
         # left box
-        leftBox = QVBoxLayout()
-        leftBox.addWidget(self.tree)
-        addBtn = QPushButton("Add")
-        leftBox.addWidget(addBtn)
+        self.leftBox = QVBoxLayout()
+        self.leftBox.addWidget(self.tree)
+        self.addBtn = QPushButton("Add")
+        self.leftBox.addWidget(self.addBtn)
 
-        addBtn.clicked.connect(self.add_items)
+        self.addBtn.clicked.connect(self.add_items)
 
        
         # right box
-        rightBox = QVBoxLayout()
-        rightBox.addWidget(self.tree1)
-        rightBox.addWidget(QPushButton("Remove"))
-        # adding boxes to grid
-        grid = QGridLayout()
-        grid.addLayout(leftBox,0,0)
-        grid.addLayout(rightBox,0,1)
+        self.rightBox = QVBoxLayout()
 
-        self.setLayout(grid)
+        self.rightBox.addWidget(self.list)
+    
+        self.removeBtn = QPushButton("Remove")
+        self.rightBox.addWidget(self.removeBtn)
+        
+        # text box
+        self.labelText = QLabel("Name for config:")
+        
+        self.textHolder = QLineEdit()
+
+        self.textBox = QHBoxLayout()
+        self.textBox.addWidget(self.labelText)
+        self.textBox.addWidget(self.textHolder)
+
+
+        # control btns
+        self.saveBtn = QPushButton("Save Config")
+        self.saveBtn.clicked.connect(self.confirmSelection)
+
+        self.cancelBtn = QPushButton("Cancel")
+        self.cancelBtn.clicked.connect(self.cancel)
+
+        self.controlBox = QHBoxLayout()
+        self.controlBox.addWidget(self.saveBtn)
+        self.controlBox.addWidget(self.cancelBtn)
+
+
+        # adding boxes to self.grid
+        self.grid = QGridLayout()
+        self.grid.addLayout(self.leftBox, 0, 0)
+        self.grid.addLayout(self.rightBox, 0, 1)
+        self.grid.addLayout(self.controlBox, 1, 1)
+        self.grid.addLayout(self.textBox, 1, 0)
+
+        self.removeBtn.clicked.connect(self.removeItems)
+
+        self.setLayout(self.grid)
         # ------------------------------------------
         
         self.show()
@@ -92,10 +118,50 @@ class App(QWidget):
         if indexes:
             self.fileDlgPaths = []  # prevent double indexes
             for i in indexes:
-                path = self.model.filePath(i)#.replace('/','\\')
+                path = self.model.filePath(i)
                 if path not in self.fileDlgPaths:
                     self.fileDlgPaths.append(path)
             print(self.fileDlgPaths)
+            for file in self.fileDlgPaths:
+                self.add_file(file)
+            self.list.setModel(self.model123)
+                
+    
+
+    def add_file(self, file):
+        if os.path.isdir(file):
+            return self.add_dir(file)
+        list_of_items = self.model123.findItems(file)
+        for item in list_of_items:
+            print(item.text())
+        if len(list_of_items) == 0:
+            item = QStandardItem(file)
+            self.model123.appendRow(item)
+    
+    def add_dir(self, dir):
+        files = os.listdir(dir)
+        for file in files:
+            if os.path.isdir(file):
+                self.add_dir(os.path.join(dir, file).replace("\\", "/"))
+            else:
+                self.add_file(os.path.join(dir, file).replace("\\", "/"))
+
+    
+    def removeItems(self):
+        indexes = self.list.selectedIndexes()
+        print("len", len(indexes))
+        for index in range (len(indexes) - 1, -1, -1):
+            print(indexes[index].row())
+            self.model123.takeRow(indexes[index].row())
+    
+    def confirmSelection(self):
+        pass
+
+    def cancel(self):
+        pass
+    
+
+
 
 
 if __name__ == '__main__':
