@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 from PyQt5.QtWidgets import QApplication, QFileSystemModel, QTreeView, QWidget, QVBoxLayout, QHBoxLayout, QLabel, \
                             QGridLayout, QPushButton, QListView, QFileDialog, QLineEdit
 from PyQt5.QtGui import QIcon, QStandardItemModel, QStandardItem
@@ -22,7 +23,7 @@ class App(QWidget):
         
         #self.rootPath = 'D:/Hello Kotlin'  # TODO  change rootpath to dialog window
         self.dirDialog = QFileDialog()
-        self.rootPath = self.dirDialog.getExistingDirectory()
+        self.rootPath = self.dirDialog.getExistingDirectory()+"/"
 
         print(self.rootPath)
 
@@ -92,7 +93,7 @@ class App(QWidget):
         self.saveBtn.clicked.connect(self.confirmSelection)
 
         self.cancelBtn = QPushButton("Cancel")
-        self.cancelBtn.clicked.connect(self.cancel)
+        self.cancelBtn.clicked.connect(lambda:self.close())
 
         self.controlBox = QHBoxLayout()
         self.controlBox.addWidget(self.saveBtn)
@@ -103,8 +104,8 @@ class App(QWidget):
         self.grid = QGridLayout()
         self.grid.addLayout(self.leftBox, 0, 0)
         self.grid.addLayout(self.rightBox, 0, 1)
-        self.grid.addLayout(self.controlBox, 1, 1)
-        self.grid.addLayout(self.textBox, 1, 0)
+        self.grid.addLayout(self.controlBox, 2, 1)
+        self.grid.addLayout(self.textBox, 2, 0)
 
         self.removeBtn.clicked.connect(self.removeItems)
 
@@ -155,7 +156,11 @@ class App(QWidget):
             self.model123.takeRow(indexes[index].row())
     
     def confirmSelection(self):
-        pass
+        if self.model123.rowCount() != 0:
+            configName = self.textHolder.text()
+            configName = re.sub("[^A-Za-z0-9 ]", "", configName)
+            if len(configName) != 0:
+                print(configName)
 
     def cancel(self):
         pass
