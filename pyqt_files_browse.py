@@ -1,5 +1,6 @@
 import sys
 import os
+from shutil import copyfile
 import re
 from PyQt5.QtWidgets import QApplication, QFileSystemModel, QTreeView, QWidget, QVBoxLayout, QHBoxLayout, QLabel, \
                             QGridLayout, QPushButton, QListView, QFileDialog, QLineEdit
@@ -25,7 +26,9 @@ class App(QWidget):
         self.dirDialog = QFileDialog()
         self.rootPath = self.dirDialog.getExistingDirectory()+"/"
 
-        print(self.rootPath)
+        print("root path : ", self.rootPath)
+        self.CWD = os.path.dirname(os.path.abspath(__file__)).replace("\\", "/")+"/"
+        print("CWD : ", self.CWD)
 
         # tree
         self.model = QFileSystemModel()
@@ -158,9 +161,25 @@ class App(QWidget):
     def confirmSelection(self):
         if self.model123.rowCount() != 0:
             configName = self.textHolder.text()
-            configName = re.sub("[^A-Za-z0-9 ]", "", configName)
+            configName = re.sub("[^A-Za-z0-9_-]", "", configName)
             if len(configName) != 0:
                 print(configName)
+                os.makedirs(self.CWD + configName + "/")
+                with open(self.CWD + configName + "/" + configName + "_" + "settings.cfg", "w") as file:
+                    file.write("rootpath:" + self.rootPath)
+
+                for i in range (self.model123.rowCount()):
+                    oldPath = self.model123.item(i).text()
+                    newPath = oldPath.replace(self.rootPath, self.CWD + configName + "/")
+                    print("old path : ", oldPath)
+                    print("new path : ", newPath)
+                    print("lol : " + os.path.dirname(newPath))
+                    #os.makedirs(os.path.dirname(newPath))
+                    try:
+                        copyfile(oldPath, newPath)
+                    except FileNotFoundError:
+                        os.makedirs(os.path.dirname(newPath))
+                        copyfile(oldPath, newPath)
 
     def cancel(self):
         pass
