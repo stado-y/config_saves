@@ -56,11 +56,11 @@ class App(QWidget):
         self.model1.setRootPath(self.rootPath)
         
         self.list = QListView()
-        self.model123 = QStandardItemModel(self.list)
+        self.listModel = QStandardItemModel(self.list)
         
         self.list.setSelectionMode(QListView.ExtendedSelection)
-        self.model123 = QStandardItemModel(self.list)
-        self.list.setModel(self.model123)
+        self.listModel = QStandardItemModel(self.list)
+        self.list.setModel(self.listModel)
 
         # ----------------------------------------------
         # window layout setup
@@ -128,19 +128,19 @@ class App(QWidget):
             print(self.fileDlgPaths)
             for file in self.fileDlgPaths:
                 self.add_file(file)
-            self.list.setModel(self.model123)
+            self.list.setModel(self.listModel)
                 
     
 
     def add_file(self, file):
         if os.path.isdir(file):
             return self.add_dir(file)
-        list_of_items = self.model123.findItems(file)
+        list_of_items = self.listModel.findItems(file)
         for item in list_of_items:
             print(item.text())
         if len(list_of_items) == 0:
             item = QStandardItem(file)
-            self.model123.appendRow(item)
+            self.listModel.appendRow(item)
     
     def add_dir(self, dir):
         files = os.listdir(dir)
@@ -156,25 +156,24 @@ class App(QWidget):
         print("len", len(indexes))
         for index in range (len(indexes) - 1, -1, -1):
             print(indexes[index].row())
-            self.model123.takeRow(indexes[index].row())
+            self.listModel.takeRow(indexes[index].row())
     
     def confirmSelection(self):
-        if self.model123.rowCount() != 0:
+        if self.listModel.rowCount() != 0:
             configName = self.textHolder.text()
             configName = re.sub("[^A-Za-z0-9_-]", "", configName)
             if len(configName) != 0:
                 print(configName)
                 os.makedirs(self.CWD + configName + "/")
-                with open(self.CWD + configName + "/" + configName + "_" + "settings.cfg", "w") as file:
+                with open(f"{self.CWD}{configName}/{configName}_settings.cfg", "w") as file:
                     file.write("rootpath:" + self.rootPath)
 
-                for i in range (self.model123.rowCount()):
-                    oldPath = self.model123.item(i).text()
+                for i in range (self.listModel.rowCount()):
+                    oldPath = self.listModel.item(i).text()
                     newPath = oldPath.replace(self.rootPath, self.CWD + configName + "/")
                     print("old path : ", oldPath)
                     print("new path : ", newPath)
                     print("lol : " + os.path.dirname(newPath))
-                    #os.makedirs(os.path.dirname(newPath))
                     try:
                         copyfile(oldPath, newPath)
                     except FileNotFoundError:
